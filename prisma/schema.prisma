@@ -1,0 +1,69 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+//model untuk pengguna
+model User {
+  id         Int          @id @default(autoincrement())
+  name       String       @default("")
+  username   String       @unique
+  password   String
+  role       roleType
+  createdAt  DateTime     @default(now())
+  updateAt   DateTime     @default(now()) @updatedAt
+  peminjaman Peminjaman[]
+  pengembalian Pengembalian[]
+}
+
+model Barang {
+  id         Int          @id @default(autoincrement())
+  name       String       @default("")
+  category   String       @default("")
+  location   String       @default("")
+  quantity   Int          @default(0)
+  createdAt  DateTime     @default(now())
+  updateAt   DateTime     @default(now()) @updatedAt
+  peminjaman Peminjaman[]
+  pengembalian Pengembalian[]
+}
+
+model Peminjaman {
+  id            Int            @id @default(autoincrement())
+  userId        Int
+  itemId        Int
+  borrowDate    DateTime       @default(now())
+  returnDate    DateTime       @default(now())
+  createdAt     DateTime       @default(now())
+  updateAt      DateTime       @default(now()) @updatedAt
+  user_detail   User           @relation(fields: [userId], references: [id])
+  barang_detail Barang         @relation(fields: [itemId], references: [id])
+  pengembalian  Pengembalian?
+}
+
+model Pengembalian {
+  id               Int        @id @default(autoincrement())
+  peminjamanId     Int        @unique
+  userId           Int
+  itemId           Int
+  actualreturnDate DateTime   @default(now())
+  peminjaman       Peminjaman @relation(fields: [peminjamanId], references: [id]) // Relasi ke Peminjaman
+  user_detail   User           @relation(fields: [userId], references: [id])
+  barang_detail Barang         @relation(fields: [itemId], references: [id])
+}
+
+
+enum roleType {
+  Admin
+  User
+}
